@@ -1,4 +1,4 @@
-package com.study.gcs.Payroll;
+package com.study.gcs.payroll;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
