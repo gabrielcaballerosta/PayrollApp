@@ -3,7 +3,6 @@ package com.study.gcs.payroll.assembler;
 import com.study.gcs.payroll.controller.EmployeeController;
 import com.study.gcs.payroll.domain.Employee;
 import lombok.SneakyThrows;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;

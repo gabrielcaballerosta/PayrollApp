@@ -4,7 +4,6 @@ import com.study.gcs.payroll.assembler.EmployeeModelAssembler;
 import com.study.gcs.payroll.domain.Employee;
 import com.study.gcs.payroll.exception.EmployeeNotFoundException;
 import com.study.gcs.payroll.service.EmployeeService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -13,9 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -29,9 +27,8 @@ public class EmployeeController {
     private EmployeeModelAssembler assembler;
 
     @GetMapping("/employees/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) throws EmployeeNotFoundException {
-        EntityModel<Employee> employee = assembler.toModel(service.findById(id));
-        return ResponseEntity.ok(employee);
+    public EntityModel<Employee> findById(@PathVariable Long id) throws EmployeeNotFoundException {
+        return assembler.toModel(service.findById(id));
     }
 
     @PostMapping("/employees")
@@ -57,11 +54,13 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<?> findAll() {
+    public CollectionModel<EntityModel<Employee>> findAll() {
         List<EntityModel<Employee>> employees = service.findAll().stream()
                 .map(assembler::toModel)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(employees);
+                .collect(toList());
+
+        return new CollectionModel<>(employees,
+                linkTo(methodOn(EmployeeController.class).findAll()).withSelfRel());
     }
 
 }
