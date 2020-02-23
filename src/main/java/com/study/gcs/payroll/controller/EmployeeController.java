@@ -4,9 +4,12 @@ import com.study.gcs.payroll.assembler.EmployeeModelAssembler;
 import com.study.gcs.payroll.domain.Employee;
 import com.study.gcs.payroll.exception.EmployeeNotFoundException;
 import com.study.gcs.payroll.service.EmployeeService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,33 +29,39 @@ public class EmployeeController {
     private EmployeeModelAssembler assembler;
 
     @GetMapping("/employees/{id}")
-    public EntityModel<Employee> findById(@PathVariable Long id) throws EmployeeNotFoundException {
-        Employee employee = service.findById(id);
-        return assembler.toModel(employee);
+    public ResponseEntity<?> findById(@PathVariable Long id) throws EmployeeNotFoundException {
+        EntityModel<Employee> employee = assembler.toModel(service.findById(id));
+        return ResponseEntity.ok(employee);
     }
 
     @PostMapping("/employees")
-    public EntityModel<Employee> save(@RequestBody Employee employee) {
-        return assembler.toModel(service.save(employee));
+    public ResponseEntity<?> save(@RequestBody Employee employee) {
+        EntityModel<Employee> entityModel = assembler.toModel(service.save(employee));
+        return ResponseEntity
+                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(entityModel);
     }
 
     @DeleteMapping("/employees/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         service.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/employees/{id}")
-    public EntityModel<Employee> replaceEmployee(@RequestBody Employee employee, @PathVariable Long id) {
-        return assembler.toModel(service.replaceEmployee(employee, id));
+    public ResponseEntity<?> replaceEmployee(@RequestBody Employee employee, @PathVariable Long id) {
+        EntityModel<Employee> entityModel = assembler.toModel(service.replaceEmployee(employee, id));
+        return ResponseEntity
+                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(entityModel);
     }
 
     @GetMapping("/employees")
-    public CollectionModel<EntityModel<Employee>> findAll() {
+    public ResponseEntity<?> findAll() {
         List<EntityModel<Employee>> employees = service.findAll().stream()
                 .map(assembler::toModel)
                 .collect(Collectors.toList());
-        return new CollectionModel<>(employees,
-                linkTo(methodOn(EmployeeController.class).findAll()).withSelfRel());
+        return ResponseEntity.ok(employees);
     }
 
 }
